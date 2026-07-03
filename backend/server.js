@@ -5,7 +5,7 @@ const dns = require("dns");
 
 require("dotenv").config();
 
-// Fix DNS resolution issue for MongoDB Atlas
+// DNS Fix
 dns.setDefaultResultOrder("ipv4first");
 dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
@@ -15,30 +15,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// MongoDB Connection
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGO_URI, {
-      serverSelectionTimeoutMS: 10000,
-      family: 4,
-    });
-
-    console.log("MongoDB connected 🚀");
-    console.log("Database:", mongoose.connection.name);
-    console.log("Host:", mongoose.connection.host);
-  } catch (error) {
-    console.error("MongoDB error:", error.message);
-    process.exit(1);
-  }
-};
-
 // Routes
 const errorRoutes = require("./routes/errors");
-
 app.use("/api/errors", errorRoutes);
 
-
-// Health Check Route
+// Health check
 app.get("/", (req, res) => {
   res.send("DevMind AI Backend Running 🚀");
 });
@@ -46,13 +27,29 @@ app.get("/", (req, res) => {
 // Port
 const PORT = process.env.PORT || 5000;
 
-// Start Server Only After DB Connection
-const startServer = async () => {
-  await connectDB();
-
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+// DB Connection
+const connectDB = async () => {
+  await mongoose.connect(process.env.MONGO_URI, {
+    serverSelectionTimeoutMS: 10000,
+    family: 4,
   });
+
+  console.log("MongoDB connected 🚀");
+};
+
+// Start server AFTER DB connection
+const startServer = async () => {
+  try {
+    await connectDB();
+
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+
+  } catch (error) {
+    console.error("DB Connection Failed:", error.message);
+    process.exit(1);
+  }
 };
 
 startServer();
