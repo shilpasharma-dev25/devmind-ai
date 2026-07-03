@@ -41,7 +41,63 @@ const getErrors = async (req, res) => {
   }
 };
 
+
+
+// Delete Error
+const deleteError = async (req, res) => {
+  try {
+    const error = await ErrorModel.findByIdAndDelete(req.params.id);
+
+    if (!error) {
+      return res.status(404).json({
+        success: false,
+        message: "Error not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Error deleted successfully",
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+// Update Error (mark solved or edit)
+const updateError = async (req, res) => {
+  try {
+    const error = await ErrorModel.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+
+    if (!error) {
+      return res.status(404).json({
+        success: false,
+        message: "Error not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: error,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
 module.exports = {
   createError,
   getErrors,
+  deleteError,
+  updateError,
 };
