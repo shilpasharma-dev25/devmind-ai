@@ -17,18 +17,21 @@ const errorSchema = new mongoose.Schema(
       type: String,
     },
 
-    technology: {
-      type: String,
-      enum: [
-        "React",
-        "Node",
-        "Express",
-        "MongoDB",
-        "JavaScript",
-        "Other",
-      ],
-      default: "Other",
-    },
+technology: {
+  type: String,
+  enum: [
+    "React",
+    "Node",
+    "Express",
+    "MongoDB",
+    "JavaScript",
+    "PHP",
+    "WordPress",
+    "Shopify",
+    "Other",
+  ],
+  default: "Other",
+},
 
     status: {
       type: String,

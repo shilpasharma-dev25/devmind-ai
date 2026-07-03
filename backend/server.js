@@ -32,16 +32,27 @@ const connectDB = async () => {
   }
 };
 
-connectDB();
-
 // Routes
+const errorRoutes = require("./routes/errors");
+
+app.use("/api/errors", errorRoutes);
+
+
+// Health Check Route
 app.get("/", (req, res) => {
   res.send("DevMind AI Backend Running 🚀");
 });
 
-// Server
+// Port
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// Start Server Only After DB Connection
+const startServer = async () => {
+  await connectDB();
+
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+};
+
+startServer();
