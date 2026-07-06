@@ -23,6 +23,6 @@ router.delete("/:id", deleteError);
 
 
 
-router.post("/analyze", analyzeErrorAI);
+router.post("/:id/analyze", analyzeErrorAI);
 
 module.exports = router;

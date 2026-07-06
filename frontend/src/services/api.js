@@ -14,5 +14,5 @@ export const updateError = (id, data) =>
   API.put(`/errors/${id}`, data);
 
 
-export const analyzeError = (data) =>
-  API.post("/errors/analyze", data);
+export const analyzeError = (id) =>
+  API.post(`/errors/${id}/analyze`);

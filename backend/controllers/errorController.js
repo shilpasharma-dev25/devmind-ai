@@ -103,19 +103,66 @@ const updateError = async (req, res) => {
 // AI Analyze Error
 const analyzeErrorAI = async (req, res) => {
   try {
-    const { errorMessage } = req.body;
+    const { id } = req.params;
 
-    // Run both requests in parallel
+    // Find the error document
+    const error = await ErrorModel.findById(id);
+
+    if (!error) {
+      return res.status(404).json({
+        success: false,
+        message: "Error not found",
+      });
+    }
+
+    // ==========================
+    // CACHE CHECK
+    // ==========================
+    if (
+      error.aiAnalysis &&
+      error.aiAnalysis.explanation &&
+      error.resources.length > 0
+    ) {
+      console.log("✅ Returning cached AI analysis...");
+
+      return res.status(200).json({
+        success: true,
+        cached: true,
+        data: {
+          ...error.aiAnalysis.toObject(),
+          resources: error.resources,
+        },
+      });
+    }
+
+    console.log("🤖 Generating fresh AI analysis...");
+
+    // Run Gemini + n8n in parallel
     const [aiResponse, resourceResponse] = await Promise.all([
-      analyzeError(errorMessage),
-      getRecommendedResources(errorMessage),
+      analyzeError(error.errorMessage),
+      getRecommendedResources(error.errorMessage),
     ]);
+
+    // Save AI analysis
+    error.aiAnalysis = {
+      explanation: aiResponse.explanation,
+      rootCause: aiResponse.rootCause,
+      solution: aiResponse.solution,
+      bestPractices: aiResponse.bestPractices,
+      generatedAt: new Date(),
+    };
+
+    // Save resources
+    error.resources = resourceResponse.resources || [];
+
+    await error.save();
 
     return res.status(200).json({
       success: true,
+      cached: false,
       data: {
-        ...aiResponse,
-        resources: resourceResponse.resources || [],
+        ...error.aiAnalysis.toObject(),
+        resources: error.resources,
       },
     });
   } catch (err) {

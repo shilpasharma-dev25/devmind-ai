@@ -139,3 +139,42 @@
   margin-bottom: 12px;
   line-height: 1.7;
 }
+
+.resource-list {
+  margin-top: 15px;
+}
+
+.resource-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: #fafafa;
+}
+
+.resource-card h6 {
+  margin: 0 0 8px;
+  font-size: 16px;
+  color: #333;
+}
+
+.resource-card p {
+  margin: 8px 0;
+  color: #555;
+}
+
+.resource-card small {
+  color: #777;
+}
+
+.resource-card a {
+  display: inline-block;
+  margin-top: 10px;
+  text-decoration: none;
+  color: #007bff;
+  font-weight: 600;
+}
+
+.resource-card a:hover {
+  text-decoration: underline;
+}

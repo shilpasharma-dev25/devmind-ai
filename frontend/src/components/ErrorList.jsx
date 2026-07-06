@@ -51,9 +51,7 @@ const ErrorList = ({ errors, setErrors }) => {
     try {
       setLoadingId(err._id);
 
-      const res = await analyzeError({
-        errorMessage: err.errorMessage,
-      });
+   const res = await analyzeError(err._id);
 
       console.log("AI Response:", res.data.data);
 
