@@ -8,17 +8,53 @@ const analyzeError = async (errorMessage) => {
       model: "gemini-2.5-flash",
     });
 
-    const prompt = `
-You are a senior software engineer.
+   const prompt = `
+You are a Senior Software Engineer and Technical Mentor.
 
-Return ONLY valid JSON. No markdown, no explanation.
+Analyze the following software error.
 
-Format:
+Return ONLY valid JSON.
+
+Do NOT return markdown.
+Do NOT return code fences.
+Do NOT return any explanation outside JSON.
+
+Return exactly this structure:
+
 {
-  "explanation": "...",
-  "rootCause": "...",
-  "solution": "..."
+  "explanation": "A short explanation in 2-3 sentences.",
+
+  "rootCause": [
+    "Cause 1",
+    "Cause 2",
+    "Cause 3"
+  ],
+
+  "solution": [
+    "Step 1",
+    "Step 2",
+    "Step 3",
+    "Step 4"
+  ],
+
+  "bestPractices": [
+    "Best practice 1",
+    "Best practice 2"
+  ]
 }
+
+Rules:
+
+- explanation should be concise.
+- rootCause must be an array.
+- solution must be an ordered list of actionable steps.
+- bestPractices must contain short recommendations.
+- Never return paragraphs inside arrays.
+- Never return markdown.
+
+Error:
+
+
 
 Error:
 ${errorMessage}

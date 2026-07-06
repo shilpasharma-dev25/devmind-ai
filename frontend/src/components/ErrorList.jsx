@@ -1,17 +1,22 @@
-import { deleteError, updateError, analyzeError } from "../services/api";
 import { useState } from "react";
+import {
+  deleteError,
+  updateError,
+  analyzeError,
+} from "../services/api";
+
+import "./ErrorList.css";
 
 const ErrorList = ({ errors, setErrors }) => {
-  const [aiResult, setAiResult] = useState("");
-  const [loadingAI, setLoadingAI] = useState(false);
+  const [loadingId, setLoadingId] = useState(null);
+
+  const [aiResults, setAiResults] = useState({});
 
   const handleDelete = async (id) => {
     try {
       await deleteError(id);
 
-      setErrors(
-        errors.filter((err) => err._id !== id)
-      );
+      setErrors(errors.filter((err) => err._id !== id));
     } catch (error) {
       console.log("Delete Error:", error);
     }
@@ -33,130 +38,151 @@ const ErrorList = ({ errors, setErrors }) => {
     }
   };
 
-  const handleAI = async (errorMessage) => {
-    try {
-      setLoadingAI(true);
-
-      const res = await analyzeError({
-        errorMessage,
+  const handleAI = async (err) => {
+    // Collapse if already open
+    if (aiResults[err._id]) {
+      setAiResults((prev) => {
+        const updated = { ...prev };
+        delete updated[err._id];
+        return updated;
       });
 
-      console.log("AI Response:", res.data);
+      return;
+    }
 
-      setAiResult(res.data.data);
-    } catch (err) {
-      console.log("AI Error:", err.message);
+    try {
+      setLoadingId(err._id);
 
-      setAiResult("AI analysis failed.");
+      const res = await analyzeError({
+        errorMessage: err.errorMessage,
+      });
+
+      setAiResults((prev) => ({
+        ...prev,
+        [err._id]: res.data.data,
+      }));
+    } catch (error) {
+      setAiResults((prev) => ({
+        ...prev,
+        [err._id]: "AI analysis failed.",
+      }));
+
+      console.log(error);
     } finally {
-      setLoadingAI(false);
+      setLoadingId(null);
     }
   };
 
+  if (errors.length === 0) {
+    return (
+      <p className="empty-message">
+        🚀 No errors found. Add your first error.
+      </p>
+    );
+  }
+
   return (
-    <div>
-      <h2>Errors</h2>
-
-      {/* AI RESULT BOX */}
-      {aiResult && (
-        <div
-          style={{
-            background: "#eef",
-            padding: "15px",
-            marginBottom: "20px",
-            borderRadius: "8px",
-            border: "1px solid #ccc",
-          }}
-        >
-          <h3>🤖 AI Analysis</h3>
-
-          <pre
-            style={{
-              whiteSpace: "pre-wrap",
-              wordWrap: "break-word",
-            }}
-          >
-            {typeof aiResult === "string"
-              ? aiResult
-              : JSON.stringify(aiResult, null, 2)}
-          </pre>
-        </div>
-      )}
-
-      {errors.length === 0 && (
-        <p>No errors found. Add your first error 🚀</p>
-      )}
-
+    <div className="error-list">
       {errors.map((err) => (
-        <div
-          key={err._id}
-          style={{
-            border: "1px solid #ddd",
-            padding: "15px",
-            marginBottom: "15px",
-            borderRadius: "8px",
-          }}
-        >
+        <div className="error-card" key={err._id}>
           <h3>{err.title}</h3>
 
-          <p>{err.errorMessage}</p>
-
-          <small>
-            Technology: {err.technology}
-          </small>
-
-          <p>
-            Status:{" "}
-            <strong
-              style={{
-                color:
-                  err.status === "Solved"
-                    ? "green"
-                    : "orange",
-              }}
-            >
-              {err.status}
-            </strong>
+          <p className="error-message">
+            {err.errorMessage}
           </p>
 
-          <div
-            style={{
-              display: "flex",
-              gap: "10px",
-              marginTop: "10px",
-            }}
-          >
+          <p className="technology">
+            <strong>Technology:</strong>{" "}
+            {err.technology}
+          </p>
+
+          <p>
+            <strong>Status:</strong>{" "}
+            <span
+              className={
+                err.status === "Solved"
+                  ? "status solved"
+                  : "status pending"
+              }
+            >
+              {err.status}
+            </span>
+          </p>
+
+          <div className="button-group">
             <button
+              className="solve-btn"
               onClick={() =>
                 handleSolve(err._id)
               }
             >
-              Mark as Solved
+              ✔ Mark Solved
             </button>
 
             <button
+              className="delete-btn"
               onClick={() =>
                 handleDelete(err._id)
               }
             >
-              Delete
+              🗑 Delete
             </button>
 
             <button
-              onClick={() =>
-                handleAI(err.errorMessage)
-              }
-              disabled={loadingAI}
-              style={{
-                background: "blue",
-                color: "white",
-              }}
+              className="ai-btn"
+              disabled={loadingId === err._id}
+              onClick={() => handleAI(err)}
             >
-              {loadingAI
+              {loadingId === err._id
                 ? "Analyzing..."
-                : "Explain with AI"}
+                : aiResults[err._id]
+                ? "Hide AI"
+                : "✨ Explain with AI"}
             </button>
           </div>
+
+      {aiResults[err._id] && (
+  <div className="ai-box">
+    <h4>🤖 AI Analysis</h4>
+
+    {typeof aiResults[err._id] === "object" ? (
+      <>
+        <div className="ai-section">
+          <h5>📖 Explanation</h5>
+
+          <p>
+            {aiResults[err._id].explanation}
+          </p>
+        </div>
+
+        <div className="ai-section">
+          <h5>🔍 Root Cause</h5>
+
+          <p>
+            {aiResults[err._id].rootCause}
+          </p>
+        </div>
+
+        <div className="ai-section">
+          <h5>🛠 Solution</h5>
+
+          <ol>
+            {aiResults[err._id].solution
+              ?.split(/\d+\)/)
+              .filter((item) => item.trim() !== "")
+              .map((step, index) => (
+                <li key={index}>
+                  {step.trim()}
+                </li>
+              ))}
+          </ol>
+        </div>
+      </>
+    ) : (
+      <p>{aiResults[err._id]}</p>
+    )}
+  </div>
+)}
         </div>
       ))}
     </div>
