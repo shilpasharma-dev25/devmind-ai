@@ -19,6 +19,9 @@ app.use(express.json());
 const errorRoutes = require("./routes/errors");
 app.use("/api/errors", errorRoutes);
 
+const reportRoutes = require("./routes/reports");
+app.use("/api/reports", reportRoutes);
+
 // Health check
 app.get("/", (req, res) => {
   res.send("DevMind AI Backend Running 🚀");
