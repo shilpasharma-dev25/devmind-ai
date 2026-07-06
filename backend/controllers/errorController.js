@@ -1,4 +1,5 @@
 const ErrorModel = require("../models/Error");
+const { analyzeError } = require("../services/aiService");
 
 // Create Error
 const createError = async (req, res) => {
@@ -95,9 +96,33 @@ const updateError = async (req, res) => {
   }
 };
 
+
+
+
+// AI Analyze Error
+const analyzeErrorAI = async (req, res) => {
+  try {
+    const { errorMessage } = req.body;
+
+    const aiResponse = await analyzeError(errorMessage);
+
+    res.status(200).json({
+      success: true,
+      data: aiResponse,
+    });
+  } catch (err) {
+ res.status(200).json({
+  success: true,
+  data: aiResponse,
+});
+  }
+};
+
+
 module.exports = {
   createError,
   getErrors,
   deleteError,
   updateError,
+  analyzeErrorAI,
 };

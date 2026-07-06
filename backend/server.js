@@ -37,6 +37,9 @@ const connectDB = async () => {
   console.log("MongoDB connected 🚀");
 };
 
+console.log("Gemini Key Exists:", !!process.env.GEMINI_API_KEY);
+
+
 // Start server AFTER DB connection
 const startServer = async () => {
   try {

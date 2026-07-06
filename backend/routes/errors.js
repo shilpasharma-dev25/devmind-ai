@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { analyzeErrorAI } = require("../controllers/errorController");
 
 const {
   createError,
@@ -19,5 +20,9 @@ router.put("/:id", updateError);
 
 // DELETE
 router.delete("/:id", deleteError);
+
+
+
+router.post("/analyze", analyzeErrorAI);
 
 module.exports = router;
