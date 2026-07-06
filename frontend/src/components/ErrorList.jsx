@@ -9,7 +9,6 @@ import "./ErrorList.css";
 
 const ErrorList = ({ errors, setErrors }) => {
   const [loadingId, setLoadingId] = useState(null);
-
   const [aiResults, setAiResults] = useState({});
 
   const handleDelete = async (id) => {
@@ -39,7 +38,6 @@ const ErrorList = ({ errors, setErrors }) => {
   };
 
   const handleAI = async (err) => {
-    // Collapse if already open
     if (aiResults[err._id]) {
       setAiResults((prev) => {
         const updated = { ...prev };
@@ -57,17 +55,19 @@ const ErrorList = ({ errors, setErrors }) => {
         errorMessage: err.errorMessage,
       });
 
+      console.log("AI Response:", res.data.data);
+
       setAiResults((prev) => ({
         ...prev,
         [err._id]: res.data.data,
       }));
     } catch (error) {
+      console.log(error);
+
       setAiResults((prev) => ({
         ...prev,
         [err._id]: "AI analysis failed.",
       }));
-
-      console.log(error);
     } finally {
       setLoadingId(null);
     }
@@ -92,8 +92,7 @@ const ErrorList = ({ errors, setErrors }) => {
           </p>
 
           <p className="technology">
-            <strong>Technology:</strong>{" "}
-            {err.technology}
+            <strong>Technology:</strong> {err.technology}
           </p>
 
           <p>
@@ -112,18 +111,14 @@ const ErrorList = ({ errors, setErrors }) => {
           <div className="button-group">
             <button
               className="solve-btn"
-              onClick={() =>
-                handleSolve(err._id)
-              }
+              onClick={() => handleSolve(err._id)}
             >
               ✔ Mark Solved
             </button>
 
             <button
               className="delete-btn"
-              onClick={() =>
-                handleDelete(err._id)
-              }
+              onClick={() => handleDelete(err._id)}
             >
               🗑 Delete
             </button>
@@ -141,48 +136,107 @@ const ErrorList = ({ errors, setErrors }) => {
             </button>
           </div>
 
-      {aiResults[err._id] && (
-  <div className="ai-box">
-    <h4>🤖 AI Analysis</h4>
+          {aiResults[err._id] && (
+            <div className="ai-box">
+              <h4>🤖 AI Analysis</h4>
 
-    {typeof aiResults[err._id] === "object" ? (
-      <>
-        <div className="ai-section">
-          <h5>📖 Explanation</h5>
+              {typeof aiResults[err._id] === "object" ? (
+                <>
+                  <div className="ai-section">
+                    <h5>📖 Explanation</h5>
+                    <p>{aiResults[err._id].explanation}</p>
+                  </div>
 
-          <p>
-            {aiResults[err._id].explanation}
-          </p>
-        </div>
+                  <div className="ai-section">
+                    <h5>🔍 Root Cause</h5>
 
-        <div className="ai-section">
-          <h5>🔍 Root Cause</h5>
+                    {Array.isArray(aiResults[err._id].rootCause) ? (
+                      <ul>
+                        {aiResults[err._id].rootCause.map((cause, index) => (
+                          <li key={index}>{cause}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p>{aiResults[err._id].rootCause}</p>
+                    )}
+                  </div>
 
-          <p>
-            {aiResults[err._id].rootCause}
-          </p>
-        </div>
+                  <div className="ai-section">
+                    <h5>🛠 Solution</h5>
 
-        <div className="ai-section">
-          <h5>🛠 Solution</h5>
+                    {Array.isArray(aiResults[err._id].solution) ? (
+                      <ol>
+                        {aiResults[err._id].solution.map((step, index) => (
+                          <li key={index}>{step}</li>
+                        ))}
+                      </ol>
+                    ) : typeof aiResults[err._id].solution === "string" ? (
+                      <p>{aiResults[err._id].solution}</p>
+                    ) : (
+                      <p>No solution available.</p>
+                    )}
+                  </div>
 
-          <ol>
-            {aiResults[err._id].solution
-              ?.split(/\d+\)/)
-              .filter((item) => item.trim() !== "")
-              .map((step, index) => (
-                <li key={index}>
-                  {step.trim()}
-                </li>
-              ))}
-          </ol>
-        </div>
-      </>
-    ) : (
-      <p>{aiResults[err._id]}</p>
-    )}
-  </div>
-)}
+                  <div className="ai-section">
+                    <h5>✅ Best Practices</h5>
+
+                    {Array.isArray(aiResults[err._id].bestPractices) ? (
+                      <ul>
+                        {aiResults[err._id].bestPractices.map(
+                          (practice, index) => (
+                            <li key={index}>{practice}</li>
+                          )
+                        )}
+                      </ul>
+                    ) : (
+                      <p>{aiResults[err._id].bestPractices}</p>
+                    )}
+                  </div>
+
+                  <div className="ai-section">
+                    <h5>📚 Recommended Resources</h5>
+
+                    {aiResults[err._id].resources &&
+                    aiResults[err._id].resources.length > 0 ? (
+                      <div className="resource-list">
+                        {aiResults[err._id].resources.map(
+                          (resource, index) => (
+                            <div
+                              className="resource-card"
+                              key={index}
+                            >
+                              <h6>{resource.title}</h6>
+
+                              <p>{resource.description}</p>
+
+                              <small>
+                                <strong>Source:</strong>{" "}
+                                {resource.source}
+                              </small>
+
+                              <br />
+
+                              <a
+                                href={resource.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                🔗 Open Resource
+                              </a>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    ) : (
+                      <p>No resources found.</p>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <p>{aiResults[err._id]}</p>
+              )}
+            </div>
+          )}
         </div>
       ))}
     </div>

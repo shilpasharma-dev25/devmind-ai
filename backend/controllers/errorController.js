@@ -1,5 +1,6 @@
 const ErrorModel = require("../models/Error");
 const { analyzeError } = require("../services/aiService");
+const { getRecommendedResources } = require("../services/n8nService");
 
 // Create Error
 const createError = async (req, res) => {
@@ -42,8 +43,6 @@ const getErrors = async (req, res) => {
   }
 };
 
-
-
 // Delete Error
 const deleteError = async (req, res) => {
   try {
@@ -61,6 +60,8 @@ const deleteError = async (req, res) => {
       message: "Error deleted successfully",
     });
   } catch (err) {
+    console.error(err);
+
     res.status(500).json({
       success: false,
       message: err.message,
@@ -89,6 +90,8 @@ const updateError = async (req, res) => {
       data: error,
     });
   } catch (err) {
+    console.error(err);
+
     res.status(500).json({
       success: false,
       message: err.message,
@@ -96,28 +99,34 @@ const updateError = async (req, res) => {
   }
 };
 
-
-
-
+// AI Analyze Error
 // AI Analyze Error
 const analyzeErrorAI = async (req, res) => {
   try {
     const { errorMessage } = req.body;
 
-    const aiResponse = await analyzeError(errorMessage);
+    // Run both requests in parallel
+    const [aiResponse, resourceResponse] = await Promise.all([
+      analyzeError(errorMessage),
+      getRecommendedResources(errorMessage),
+    ]);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      data: aiResponse,
+      data: {
+        ...aiResponse,
+        resources: resourceResponse.resources || [],
+      },
     });
   } catch (err) {
- res.status(200).json({
-  success: true,
-  data: aiResponse,
-});
+    console.error("AI Analysis Error:", err);
+
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Failed to analyze error.",
+    });
   }
 };
-
 
 module.exports = {
   createError,
