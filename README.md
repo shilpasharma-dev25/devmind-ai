@@ -268,6 +268,17 @@ Each tracked error can be analyzed using Google Gemini AI to generate:
 
 ---
 
+## 📧 Weekly Developer Report
+
+A scheduled n8n Cloud workflow fetches weekly analytics from the backend and automatically sends a summary email using Gmail.
+
+![Weekly Developer Report](./screenshots/weekly-email.png)
+
+
+
+
+---
+
 # 🚀 Future Enhancements
 
 - 🔐 User authentication and authorization
